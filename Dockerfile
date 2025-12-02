@@ -1,20 +1,17 @@
 FROM lmentory/wee:latest
 
-# 安装 git（用于备份）
-RUN apk add --no-cache git 2>/dev/null || apt-get update && apt-get install -y git 2>/dev/null || true
+# 安装 git
+RUN apk add --no-cache git bash 2>/dev/null || apt-get update && apt-get install -y git bash 2>/dev/null || true
 
-# 创建存储目录并赋予权限
+# 创建存储目录
 RUN mkdir -p /app/tvbox.backup && \
     chmod -R 777 /app/tvbox.backup && \
     chmod -R 777 /tmp
 
-# 设置工作目录
 WORKDIR /app
 
-# 暴露端口
 EXPOSE 5000
 
-# 默认环境变量
 ENV PORT=5000
 ENV BACKUP_INTERVAL=3600
 
@@ -22,4 +19,6 @@ ENV BACKUP_INTERVAL=3600
 COPY start.sh /start.sh
 RUN chmod +x /start.sh
 
-CMD ["/start.sh"]
+# 清除原 ENTRYPOINT，使用我们的脚本
+ENTRYPOINT []
+CMD ["/bin/sh", "/start.sh"]
