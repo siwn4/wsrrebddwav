@@ -1,16 +1,18 @@
 #!/bin/sh
 
 # ============================================
-# WebDAV 服务启动脚本 (lmentory/wee)
+# WebDAV 服务启动脚本（基于 lmentory/wee）
 # ============================================
 
 export PORT=${PORT:-5000}
 export BACKUP_INTERVAL=${BACKUP_INTERVAL:-3600}
+export WD_USERNAME=${USERNAME:-admin}
+export WD_PASSWORD=${PASSWORD:-admin123}
 
 echo "=========================================="
 echo "🚀 WebDAV 服务启动中..."
 echo "📌 端口: $PORT"
-echo "👤 用户: $USERNAME"
+echo "👤 用户: $WD_USERNAME"
 echo "📁 存储路径: /app/tvbox.backup"
 echo "=========================================="
 
@@ -70,33 +72,40 @@ if [ -n "$GITHUB_TOKEN" ] && [ -n "$GITHUB_REPO" ]; then
             sleep $BACKUP_INTERVAL
         done
     ) &
-    echo "🔄 后台备份已启动"
+    echo "🔄 后台备份已启动（每 ${BACKUP_INTERVAL} 秒）"
 fi
 
 # ============================================
-# 启动主程序（查找原镜像的启动方式）
+# 启动 WebDAV 主程序（二进制版本）
 # ============================================
+cd /app
+
+# 检测架构
+machine=$(uname -m)
+if echo "$machine" | grep -qE "arm|aarch"; then
+    arch="arm64"
+else
+    arch="amd64"
+fi
+
+echo "🔧 系统架构: $arch"
+
+# 确保二进制文件有执行权限
+chmod 755 webdav_simulator.$arch 2>/dev/null || true
+
+# 创建临时目录
+rm -rf tmp.${PORT}
+mkdir -p tmp.${PORT}
+chmod 777 tmp.${PORT}
+export TMPDIR=tmp.${PORT}
+
 echo "🌐 启动 WebDAV..."
 
-# 查看原镜像有什么文件
-echo "📂 /app 目录内容："
-ls -la /app/ 2>/dev/null || true
-
-# 尝试常见的启动方式
-if [ -f "/app/app.py" ]; then
-    exec python /app/app.py
-elif [ -f "/app/main.py" ]; then
-    exec python /app/main.py
-elif [ -f "/app/server.py" ]; then
-    exec python /app/server.py
-elif [ -f "/app/run.py" ]; then
-    exec python /app/run.py
-elif [ -f "/entrypoint.sh" ]; then
-    exec /entrypoint.sh
-elif [ -f "/start.sh" ] && [ "/start.sh" != "$0" ]; then
-    exec /start.sh
-else
-    # 如果找不到，尝试直接运行原镜像的 CMD
-    echo "尝试运行原镜像默认命令..."
-    exec "$@"
-fi
+# 启动主程序（带用户名密码）
+exec ./webdav_simulator.$arch \
+    --port ${PORT} \
+    --username "${WD_USERNAME}" \
+    --password "${WD_PASSWORD}" \
+    --alist_config alistservers.txt \
+    --proxymode 1 \
+    'xy115-all.txt.xz#xy-dy.txt.xz#xy-dsj.txt.xz#xy115-music.txt.xz'
