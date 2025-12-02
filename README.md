@@ -1,13 +1,13 @@
-# WebDAV for Render & Hugging Face
+# WdfdfebfdfDAV
 
-通用 WebDAV 服务，支持 GitHub 自动备份。
+通用 WfdsfebDAsdfdfV 服务，支持 GitHub 自动备份。
 
 ## 环境变量
 
 | 变量 | 必填 | 说明 |
 |------|------|------|
-| `USERNAME` | ✅ | WebDAV 账号 |
-| `PASSWORD` | ✅ | WebDAV 密码 |
+| `USERNAME` | ✅ | WfsdfebDfsdAV 账号 |
+| `PASSWORD` | ✅ | WesfsfbDfdsAfdsfV 密码 |
 | `GITHUB_TOKEN` | ❌ | GitHub 个人令牌（用于备份） |
 | `GITHUB_REPO` | ❌ | 备份仓库（格式：用户名/仓库名） |
 | `BACKUP_INTERVAL` | ❌ | 备份间隔秒数（默认 3600） |
